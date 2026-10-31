@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>أثرٌ لم يحدث — AFTER</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Readex+Pro:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#000;--ink:#e9e4d8;--dim:#8d887b;--line:#2a2823;--glow:#d8b36a;--cold:#5f8f94;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*:before,*:after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Readex Pro',system-ui,sans-serif;font-weight:300;line-height:1.9}
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem 1.2rem;overflow:hidden}
+#bg{position:absolute;inset:0;width:100%;height:100%;opacity:.55}
+.hero>*:not(canvas){position:relative}
+h1{font-family:Amiri,serif;font-weight:400;font-size:clamp(2rem,6vw,3.8rem);line-height:1.5;margin:0 0 1.6rem;max-width:18ch;text-shadow:0 0 30px #000,0 0 8px #000}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;width:min(640px,100%)}
+input{flex:1 1 280px;background:#000c;border:1px solid var(--line);color:var(--ink);font:inherit;padding:.8rem 1rem;border-radius:2px}
+input:focus,button:focus-visible{outline:2px solid var(--glow);outline-offset:2px}
+button{font:inherit;cursor:pointer;background:var(--glow);color:#000;border:0;padding:.8rem 1.4rem;border-radius:2px;font-weight:400}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.hint{color:var(--dim);font-size:.85rem;margin-top:1rem;text-shadow:0 0 8px #000}
+main{display:none;max-width:760px;margin:0 auto;padding:2.5rem 1.2rem 5rem}
+main.on{display:block}
+.sheet{border:1px solid var(--line);padding:1.5rem;background:#0a0907}
+.sheet h2{font-family:Amiri,serif;font-weight:400;font-size:1.7rem;margin:0 0 1rem;line-height:1.5}
+canvas#map{width:100%;height:auto;display:block;border:1px solid var(--line)}
+.cap{color:var(--dim);font-size:.82rem;margin:.4rem 0 1.6rem}
+h3{font-family:Amiri,serif;font-weight:700;font-size:1.25rem;margin:1.8rem 0 .4rem;color:var(--glow)}
+.scent{font-family:Amiri,serif;font-size:1.3rem;line-height:2}
+.chips{display:flex;gap:.5rem;flex-wrap:wrap;margin:.8rem 0}
+.chip{background:transparent;color:var(--dim);border:1px solid var(--line);padding:.25rem .9rem;border-radius:99px;font-size:.9rem}
+.chip[aria-pressed=true]{color:#000;background:var(--cold);border-color:var(--cold)}
+.msg{font-family:Amiri,serif;font-size:1.25rem;border-right:2px solid var(--glow);padding-right:1rem;margin:.6rem 0}
+.acts{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.8rem}
+.arch{margin-top:2.5rem}
+.arch details{border-top:1px solid var(--line);padding:.6rem 0}
+.arch summary{cursor:pointer;color:var(--dim)}
+.note{color:var(--dim);font-size:.8rem;margin-top:1.5rem}
+.wm{position:fixed;left:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:5;font-family:system-ui,sans-serif;font-size:.78rem;letter-spacing:.04em;color:var(--dim);opacity:.8;pointer-events:none;direction:ltr}
+@media (prefers-reduced-motion:reduce){#bg{display:none}}
+</style>
+</head>
+<body>
+<section class="hero" id="hero">
+  <canvas id="bg" aria-hidden="true"></canvas>
+  <h1>في مكانٍ ما، تعيش النسخة التي لم تصبحها أبدًا.</h1>
+  <div class="row">
+    <input id="ev" placeholder="اكتب حدثًا لم يحدث… مثل: سافرت إلى اليابان" maxlength="90" aria-label="حدث لم يحدث">
+    <button id="go">اكتشف العالم الذي لم يحدث</button>
+  </div>
+  <p class="hint">كل ما يظهر هنا خيال، وليس تنبؤًا بما كان سيحدث.</p>
+</section>
+
+<main id="out">
+  <div class="sheet" id="sheet">
+    <h2 id="title"></h2>
+    <canvas id="map" width="720" height="440"></canvas>
+    <p class="cap">النقطة المضيئة هي لحظة القرار. كلما ابتعدت عنها تغيّرت التضاريس.</p>
+
+    <h3>رائحة هذا العالم</h3>
+    <div class="scent" id="scent"></div>
+    <div class="chips" id="chips" role="group" aria-label="مكوّنات الرائحة"></div>
+    <div class="cap" id="blend">اختر المكوّنات لتكوّن تركيبتك الافتراضية.</div>
+
+    <h3>رسالة من نسختك البديلة</h3>
+    <div class="msg" id="msg"></div>
+    <div class="acts">
+      <button id="again" class="ghost">عالم آخر لنفس الحدث</button>
+      <button id="img">احفظ كصورة للمشاركة</button>
+      <button id="copy" class="ghost">انسخ الأثر</button>
+      <button id="new" class="ghost">حدث جديد</button>
+    </div>
+    <p class="note">هذه قصة خيالية، لا تقول ما كان سيحدث فعلًا.</p>
+  </div>
+
+  <div class="arch" id="arch"></div>
+</main>
+
+<div class="wm" dir="ltr">dev.Eng._.Salem.M</div>
+
+<script>
+/* ---------- أدوات عشوائية ثابتة ---------- */
+function hash(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function noiseFn(seed){
+  const g=(x,y)=>{let h=Math.imul(x,374761393)+Math.imul(y,668265263)+seed;h=Math.imul(h^h>>>13,1274126177);return((h^h>>>16)>>>0)/4294967296};
+  const sm=t=>t*t*(3-2*t);
+  const v=(x,y)=>{const xi=Math.floor(x),yi=Math.floor(y),xf=sm(x-xi),yf=sm(y-yi);
+    const a=g(xi,yi),b=g(xi+1,yi),c=g(xi,yi+1),d=g(xi+1,yi+1);
+    return a+(b-a)*xf+(c-a)*yf+(a-b-c+d)*xf*yf};
+  return (x,y)=>v(x,y)*.55+v(x*2,y*2)*.3+v(x*4,y*4)*.15;
+}
+
+/* ---------- رسم الخريطة ---------- */
+function drawMap(cv,seed,t,res){
+  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height,n=noiseFn(seed),warp=noiseFn(seed+7);
+  const sx=W/res,sy=H/(res*H/W),cols=res,rows=Math.round(res*H/W);
+  const cx=cols*.5,cy=rows*.5;
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+  for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){
+    const d=Math.hypot(i-cx,j-cy)/Math.hypot(cx,cy);          // البعد عن نقطة البداية
+    const w=(warp(i*.06+t,j*.06)-.5)*d*14;                      // اضطراب يزداد مع البعد
+    const h=n((i+w)*.07+t*.3,(j+w)*.07);
+    let c;
+    if(h<.42){const k=h/.42;c=`rgb(${8+k*10|0},${16+k*26|0},${20+k*30|0})`}      // ماء
+    else if(h<.5){c=`rgb(${60|0},${70},${60})`}                                   // ساحل
+    else{const k=Math.min(1,(h-.5)/.35);c=`rgb(${60+k*150|0},${48+k*110|0},${30+k*60|0})`} // يابسة وجبال
+    // خطوط كنتورية
+    if(Math.abs((h*14)%1-.5)<.06)c='rgba(233,228,216,.22)';
+    ctx.fillStyle=c;ctx.fillRect(i*sx,j*sy,sx+1,sy+1);
+  }
+  // الزلازل الصغيرة: حلقات تبتعد عن النقطة
+  ctx.strokeStyle='rgba(216,179,106,.35)';ctx.lineWidth=1;
+  for(let r=1;r<=3;r++){ctx.beginPath();ctx.arc(W/2,H/2,r*Math.min(W,H)*.14+(t*40%12),0,7);ctx.stroke()}
+  const g=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,22);
+  g.addColorStop(0,'rgba(255,230,160,1)');g.addColorStop(1,'rgba(216,179,106,0)');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(W/2,H/2,22,0,7);ctx.fill();
+}
+
+/* خلفية الصفحة الرئيسية: خريطة تتحرك ببطء */
+const bg=document.getElementById('bg');
+function fit(){bg.width=Math.min(innerWidth,1000);bg.height=Math.min(innerHeight,700)}
+fit();addEventListener('resize',fit);
+let T=0,bgSeed=hash('after');
+(function loop(){T+=.0016;if(!document.getElementById('out').classList.contains('on'))drawMap(bg,bgSeed,T,64);requestAnimationFrame(loop)})();
+
+/* ---------- المحتوى الخيالي ---------- */
+const NOTES=['ورق قديم','مطر على الإسفلت','نافذة مفتوحة طوال الليل','خشب مبلّل','قهوة باردة','غبار مكتبة','ياسمين بعيد','حديد دافئ','برتقال مجفف','دخان خفيف','عشب بعد العاصفة','حبر طازج','ملح البحر','جلد قديم','ثلج على معطف','خبز الفجر','عود محروق','قرنفل','طين رطب','زجاج بارد'];
+const PLACES=['قرب محطة قطار صغيرة','في بيت على طرف جبل','فوق مقهى لا يغلق أبوابه','في مدينة تُمطر كل أربعاء','على جزيرة يصلها المركب مرتين في الأسبوع','في شارع ضيق تطلّ نوافذه على نهر','في قرية يُسمع فيها الأذان من ثلاث جهات'];
+const KEEPS=['دفترًا لم تكتبه أنت','مفتاحًا لا أعرف بابه','خريطة مطوية بخطك','صورة التقطتها لمكان لم تزره','رسالة بدأتها ولم أُنهِها','ورقة فيها اسم لم تنطقه'];
+const ENDS=['لا أعرف إن كانت حياتي أفضل أو أخف أو أغرب، لكنها حياتي.','أحيانًا أتخيّلك، وأتساءل أي رصيف تمشي عليه الآن.','لا تحزن عليّ ولا عليك، فكلانا يعيش ما وصل إليه.','إن مررتَ يومًا بهذا العالم، اترك الباب موارِبًا.','أنا لست جوابًا عن شيء، أنا فقط احتمال تعب من الانتظار.'];
+const NAMES=['عالم الباب الموارب','عالم الأرصفة الطويلة','عالم المطر المؤجَّل','عالم الخطوة الأولى','عالم النافذة المضيئة','عالم الغياب اللطيف'];
+
+let state={ev:'',n:0,seed:0,notes:[],picked:new Set(),msg:'',title:''};
+const $=id=>document.getElementById(id);
+
+function build(ev,n){
+  const seed=hash(ev+'|'+n),r=rng(seed),pick=a=>a[Math.floor(r()*a.length)];
+  const pool=[...NOTES].sort(()=>r()-.5).slice(0,3);
+  const extra=[...NOTES].filter(x=>!pool.includes(x)).sort(()=>r()-.5).slice(0,5);
+  return{ev,n,seed,notes:pool,all:[...pool,...extra],picked:new Set(),
+    title:pick(NAMES),
+    msg:`مرحبًا، أنا نسختك التي «${ev}». أعيش الآن ${pick(PLACES)}، وأحتفظ بـ${pick(KEEPS)}. ${pick(ENDS)}`};
+}
+
+function render(){
+  const s=state;
+  $('title').textContent=s.title+' — «'+s.ev+'»';
+  drawMap($('map'),s.seed,0,90);
+  $('scent').textContent='«رائحة '+s.notes[0]+'، و'+s.notes[1]+'، و'+s.notes[2]+'».';
+  const c=$('chips');c.innerHTML='';
+  s.all.forEach(x=>{const b=document.createElement('button');b.className='chip';b.textContent=x;
+    b.setAttribute('aria-pressed',s.picked.has(x));
+    b.onclick=()=>{s.picked.has(x)?s.picked.delete(x):s.picked.add(x);render()};c.appendChild(b)});
+  $('blend').textContent=s.picked.size?'تركيبتك الافتراضية: '+[...s.picked].join(' + '):'اختر المكوّنات لتكوّن تركيبتك الافتراضية.';
+  $('msg').textContent=s.msg;
+  $('hero').style.display='none';$('out').classList.add('on');scrollTo(0,0);
+  renderArchive();
+}
+
+/* أرشيف العوالم المنقرضة: كل عالم تتركه يحفظ آخر رسالة له */
+let extinct=[];
+try{extinct=JSON.parse(localStorage.getItem('after-extinct')||'[]')}catch(e){extinct=[]}
+function retire(){
+  if(!state.ev)return;
+  extinct.unshift({title:state.title,ev:state.ev,msg:state.msg});
+  extinct=extinct.slice(0,12);
+  try{localStorage.setItem('after-extinct',JSON.stringify(extinct))}catch(e){}
+}
+function renderArchive(){
+  const a=$('arch');
+  if(!extinct.length){a.innerHTML='';return}
+  a.innerHTML='<h3>أرشيف العوالم المنقرضة</h3>'+extinct.map(x=>
+    `<details><summary></summary><div class="msg"></div></details>`).join('');
+  a.querySelectorAll('details').forEach((d,i)=>{
+    d.querySelector('summary').textContent=extinct[i].title+' — «'+extinct[i].ev+'»';
+    d.querySelector('.msg').textContent='آخر رسالة: '+extinct[i].msg;
+  });
+}
+
+function start(ev,n){retire();state=build(ev,n);render()}
+$('go').onclick=()=>{const v=$('ev').value.trim();if(!v){$('ev').focus();return}start(v,0)};
+$('ev').addEventListener('keydown',e=>{if(e.key==='Enter')$('go').click()});
+$('again').onclick=()=>start(state.ev,state.n+1);
+$('new').onclick=()=>{$('out').classList.remove('on');$('hero').style.display='';$('ev').value='';$('ev').focus()};
+$('copy').onclick=()=>{
+  const t=`${state.title} — «${state.ev}»\n\nرائحة: ${state.notes.join('، ')}\n${state.picked.size?'تركيبتي: '+[...state.picked].join(' + ')+'\n':''}\n${state.msg}\n\n(قصة خيالية — أثرٌ لم يحدث)`;
+  const done=()=>{$('copy').textContent='تم النسخ'};
+  try{navigator.clipboard.writeText(t).then(done,done)}catch(e){done()}
+};
+
+/* بطاقة مشاركة PNG بمقاس 1080x1350 (مناسبة لإنستغرام وتيك توك وستوري) */
+function wrap(ctx,text,maxW){const w=text.split(' '),lines=[];let l='';for(const x of w){const t=l?l+' '+x:x;if(ctx.measureText(t).width>maxW&&l){lines.push(l);l=x}else l=t}if(l)lines.push(l);return lines}
+$('img').onclick=()=>{
+  const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  x.fillStyle='#000';x.fillRect(0,0,W,H);
+  x.drawImage($('map'),60,60,960,585);
+  x.strokeStyle='#2a2823';x.strokeRect(60,60,960,585);
+  x.direction='rtl';x.textAlign='right';
+  let y=735;
+  x.fillStyle='#d8b36a';x.font='700 54px Amiri,serif';
+  wrap(x,state.title+' — «'+state.ev+'»',960).forEach(l=>{x.fillText(l,W-60,y);y+=72});
+  y+=10;x.fillStyle='#8fb5b8';x.font='400 38px Amiri,serif';
+  wrap(x,'رائحة '+state.notes.join('، '),960).forEach(l=>{x.fillText(l,W-60,y);y+=56});
+  y+=24;x.fillStyle='#e9e4d8';x.font='400 36px Amiri,serif';
+  wrap(x,state.msg,930).forEach(l=>{x.fillText(l,W-60,y);y+=58});
+  x.textAlign='center';x.fillStyle='#8d887b';x.font='28px Amiri,serif';
+  x.fillText('أثرٌ لم يحدث — AFTER  |  قصة خيالية',W/2,H-50);
+  /* علامة مائية */
+  x.save();x.direction='ltr';x.textAlign='center';x.globalAlpha=.07;x.fillStyle='#fff';x.font='700 64px system-ui,sans-serif';
+  x.translate(W/2,H/2);x.rotate(-Math.PI/6);
+  for(let i=-3;i<=3;i++)x.fillText('dev.Eng._.Salem.M',0,i*260);
+  x.restore();
+  x.save();x.direction='ltr';x.textAlign='left';x.globalAlpha=.9;x.fillStyle='#d8b36a';x.font='500 30px system-ui,sans-serif';
+  x.fillText('dev.Eng._.Salem.M',60,H-100);x.restore();
+  const a=document.createElement('a');a.download='athar-'+state.n+'.png';a.href=c.toDataURL('image/png');a.click();
+};
+</script>
+</body>
+</html>
